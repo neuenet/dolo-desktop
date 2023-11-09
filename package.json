@@ -36,7 +36,7 @@
   "private": true,
   "scripts": {
     "build": "npm i && npm run clean && npm run render && vite build",
-    "clean": "del './dist' './public/style*'",
+    "clean": "del-cli './dist' './public/style*'",
     "dev": "vite",
     "icon": "npm run tauri icon",
     "increment": "chronver --increment package",
@@ -53,5 +53,5 @@
     "watch:sass": "sass --watch sass:public --style compressed"
   },
   "type": "module",
-  "version": "2023.11.08.3"
+  "version": "2023.11.08.4"
 }
