@@ -1,0 +1,39 @@
+fieldset {
+  button {
+    &:not(:disabled) {
+      background-color: var(--dolo-palette-accent) !important;
+      color: var(--dolo-palette-input-background) !important;
+    }
+
+    &:disabled {
+      background-color: var(--dolo-palette-input-background) !important;
+      color: var(--dolo-palette-input-foreground) !important;
+    }
+  }
+
+  label {
+    color: var(--dolo-palette-input-foreground) !important;
+
+    + input,
+    + select {
+      background-color: var(--dolo-palette-input-background) !important;
+      color: var(--dolo-palette-foreground) !important;
+
+      &::placeholder {
+        color: var(--dolo-palette-input-foreground) !important;
+      }
+
+      &:not(:focus) {
+        border-color: var(--dolo-palette-input-background) !important;
+      }
+
+      &:focus {
+        border-color: var(--dolo-palette-input-foreground) !important;
+      }
+    }
+
+    + input:invalid {
+      border-color: var(--dolo-palette-failure) !important;
+    }
+  }
+}

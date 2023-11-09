@@ -1,0 +1,86 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "Dolo",
+    "version": "2023.11.8"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "clipboard": {
+        "writeText": true
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "$DOCUMENT/**",
+          "$HOME/.config/**"
+        ]
+      },
+      "globalShortcut": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "open": ".+"
+      },
+      "window": {
+        "close": true,
+        "hide": true,
+        "setFocus": true,
+        "show": true,
+        "startDragging": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "Copyright © 2023 Neuenet.\nAll Rights Reserved.",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.neuenet.dolo",
+      "targets": "all"
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "center": true,
+        "fullscreen": false,
+        "height": 600,
+        "hiddenTitle": true,
+        "label": "local",
+        "minHeight": 450,
+        "minWidth": 875,
+        "resizable": true,
+        "title": "Dolo",
+        "titleBarStyle": "Overlay",
+        "width": 1200
+      },
+      {
+        "height": 350,
+        "label": "settings",
+        "minimizable": false,
+        "resizable": false,
+        "title": "Settings",
+        "visible": false,
+        "width": 800
+      }
+    ]
+  }
+}

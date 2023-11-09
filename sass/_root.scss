@@ -1,0 +1,227 @@
+:root {
+  // Gray ─────────────────────────────────
+  --inc-gray-1-raw: 95.57% 0.003 286.35;
+  --inc-gray-1: oklch(var(--inc-gray-1-raw));
+  --inc-gray-2-raw: 92.04% 0.002 197.12;
+  --inc-gray-2: oklch(var(--inc-gray-2-raw));
+  --inc-gray-3-raw: 88.28% 0.003 286.34;
+  --inc-gray-3: oklch(var(--inc-gray-3-raw));
+  --inc-gray-4-raw: 84.68% 0.002 197.12;
+  --inc-gray-4: oklch(var(--inc-gray-4-raw));
+  --inc-gray-5-raw: 80.73% 0.002 247.84;
+  --inc-gray-5: oklch(var(--inc-gray-5-raw));
+  --inc-gray-6-raw: 75.03% 0.002 247.85;
+  --inc-gray-6: oklch(var(--inc-gray-6-raw));
+  --inc-gray-7-raw: 69.01% 0.003 286.32;
+  --inc-gray-7: oklch(var(--inc-gray-7-raw));
+  --inc-gray-8-raw: 63.12% 0.004 219.55;
+  --inc-gray-8: oklch(var(--inc-gray-8-raw));
+  --inc-gray-9-raw: 56.82% 0.004 247.89;
+  --inc-gray-9: oklch(var(--inc-gray-9-raw));
+
+  // Red ──────────────────────────────────
+  --inc-red-1-raw: 88.98% 0.052 3.28;
+  --inc-red-1: oklch(var(--inc-red-1-raw));
+  --inc-red-2-raw: 78.78% 0.109 4.54;
+  --inc-red-2: oklch(var(--inc-red-2-raw));
+  --inc-red-3-raw: 69.86% 0.162 7.82;
+  --inc-red-3: oklch(var(--inc-red-3-raw));
+  --inc-red-4-raw: 62.73% 0.209 12.37;
+  --inc-red-4: oklch(var(--inc-red-4-raw));
+  --inc-red-5-raw: 58.63% 0.231 19.6;
+  --inc-red-5: oklch(var(--inc-red-5-raw));
+  --inc-red-6-raw: 54.41% 0.214 19.06;
+  --inc-red-6: oklch(var(--inc-red-6-raw));
+  --inc-red-7-raw: 49.95% 0.195 18.34;
+  --inc-red-7: oklch(var(--inc-red-7-raw));
+  --inc-red-8-raw: 45.8% 0.177 17.7;
+  --inc-red-8: oklch(var(--inc-red-8-raw));
+  --inc-red-9-raw: 41.17% 0.157 16.58;
+  --inc-red-9: oklch(var(--inc-red-9-raw));
+
+  // Pink ─────────────────────────────────
+  --inc-pink-1-raw: 95.8% 0.023 354.27;
+  --inc-pink-1: oklch(var(--inc-pink-1-raw));
+  --inc-pink-2-raw: 92.14% 0.046 352.31;
+  --inc-pink-2: oklch(var(--inc-pink-2-raw));
+  --inc-pink-3-raw: 88.9% 0.066 354.39;
+  --inc-pink-3: oklch(var(--inc-pink-3-raw));
+  --inc-pink-4-raw: 85.43% 0.09 354.1;
+  --inc-pink-4: oklch(var(--inc-pink-4-raw));
+  --inc-pink-5-raw: 82.23% 0.112 355.33;
+  --inc-pink-5: oklch(var(--inc-pink-5-raw));
+  --inc-pink-6-raw: 76.37% 0.101 355.37;
+  --inc-pink-6: oklch(var(--inc-pink-6-raw));
+  --inc-pink-7-raw: 70.23% 0.092 354.96;
+  --inc-pink-7: oklch(var(--inc-pink-7-raw));
+  --inc-pink-8-raw: 64.11% 0.084 353.91;
+  --inc-pink-8: oklch(var(--inc-pink-8-raw));
+  --inc-pink-9-raw: 57.68% 0.074 353.14;
+  --inc-pink-9: oklch(var(--inc-pink-9-raw));
+
+  // Purple ───────────────────────────────
+  --inc-purple-1-raw: 89.1% 0.046 305.24;
+  --inc-purple-1: oklch(var(--inc-purple-1-raw));
+  --inc-purple-2-raw: 78.68% 0.091 305;
+  --inc-purple-2: oklch(var(--inc-purple-2-raw));
+  --inc-purple-3-raw: 68.5% 0.136 303.78;
+  --inc-purple-3: oklch(var(--inc-purple-3-raw));
+  --inc-purple-4-raw: 58.47% 0.181 302.06;
+  --inc-purple-4: oklch(var(--inc-purple-4-raw));
+  --inc-purple-5-raw: 49.39% 0.215 298.31;
+  --inc-purple-5: oklch(var(--inc-purple-5-raw));
+  --inc-purple-6-raw: 46.11% 0.198 298.4;
+  --inc-purple-6: oklch(var(--inc-purple-6-raw));
+  --inc-purple-7-raw: 42.77% 0.181 298.49;
+  --inc-purple-7: oklch(var(--inc-purple-7-raw));
+  --inc-purple-8-raw: 39.46% 0.164 298.29;
+  --inc-purple-8: oklch(var(--inc-purple-8-raw));
+  --inc-purple-9-raw: 36.01% 0.145 298.35;
+  --inc-purple-9: oklch(var(--inc-purple-9-raw));
+
+  // Blue ─────────────────────────────────
+  --inc-blue-1-raw: 89.66% 0.046 260.67;
+  --inc-blue-1: oklch(var(--inc-blue-1-raw));
+  --inc-blue-2-raw: 80.17% 0.091 258.88;
+  --inc-blue-2: oklch(var(--inc-blue-2-raw));
+  --inc-blue-3-raw: 70.94% 0.136 258.06;
+  --inc-blue-3: oklch(var(--inc-blue-3-raw));
+  --inc-blue-4-raw: 62.39% 0.181 258.33;
+  --inc-blue-4: oklch(var(--inc-blue-4-raw));
+  --inc-blue-5-raw: 54.87% 0.222 260.33;
+  --inc-blue-5: oklch(var(--inc-blue-5-raw));
+  --inc-blue-6-raw: 51.15% 0.204 260.17;
+  --inc-blue-6: oklch(var(--inc-blue-6-raw));
+  --inc-blue-7-raw: 47.36% 0.185 259.89;
+  --inc-blue-7: oklch(var(--inc-blue-7-raw));
+  --inc-blue-8-raw: 43.48% 0.17 260.2;
+  --inc-blue-8: oklch(var(--inc-blue-8-raw));
+  --inc-blue-9-raw: 39.53% 0.15 259.87;
+  --inc-blue-9: oklch(var(--inc-blue-9-raw));
+
+  // Green ────────────────────────────────
+  --inc-green-1-raw: 93.96% 0.05 148.74;
+  --inc-green-1: oklch(var(--inc-green-1-raw));
+  --inc-green-2-raw: 88.77% 0.096 147.71;
+  --inc-green-2: oklch(var(--inc-green-2-raw));
+  --inc-green-3-raw: 83.74% 0.139 146.57;
+  --inc-green-3: oklch(var(--inc-green-3-raw));
+  --inc-green-4-raw: 79.33% 0.179 145.62;
+  --inc-green-4: oklch(var(--inc-green-4-raw));
+  --inc-green-5-raw: 75.23% 0.209 144.64;
+  --inc-green-5: oklch(var(--inc-green-5-raw));
+  --inc-green-6-raw: 70.03% 0.194 144.71;
+  --inc-green-6: oklch(var(--inc-green-6-raw));
+  --inc-green-7-raw: 64.24% 0.175 144.92;
+  --inc-green-7: oklch(var(--inc-green-7-raw));
+  --inc-green-8-raw: 58.83% 0.158 145.05;
+  --inc-green-8: oklch(var(--inc-green-8-raw));
+  --inc-green-9-raw: 52.77% 0.138 145.41;
+  --inc-green-9: oklch(var(--inc-green-9-raw));
+
+  // Yellow ───────────────────────────────
+  --inc-yellow-1-raw: 97.05% 0.039 91.2;
+  --inc-yellow-1: oklch(var(--inc-yellow-1-raw));
+  --inc-yellow-2-raw: 95% 0.07 92.39;
+  --inc-yellow-2: oklch(var(--inc-yellow-2-raw));
+  --inc-yellow-3-raw: 92.76% 0.098 92.58;
+  --inc-yellow-3: oklch(var(--inc-yellow-3-raw));
+  --inc-yellow-4-raw: 90.92% 0.125 92.56;
+  --inc-yellow-4: oklch(var(--inc-yellow-4-raw));
+  --inc-yellow-5-raw: 89% 0.146 91.5;
+  --inc-yellow-5: oklch(var(--inc-yellow-5-raw));
+  --inc-yellow-6-raw: 82.39% 0.133 91.5;
+  --inc-yellow-6: oklch(var(--inc-yellow-6-raw));
+  --inc-yellow-7-raw: 75.84% 0.122 92.21;
+  --inc-yellow-7: oklch(var(--inc-yellow-7-raw));
+  --inc-yellow-8-raw: 69.14% 0.109 91.04;
+  --inc-yellow-8: oklch(var(--inc-yellow-8-raw));
+  --inc-yellow-9-raw: 62.29% 0.097 91.9;
+  --inc-yellow-9: oklch(var(--inc-yellow-9-raw));
+
+  // Orange ───────────────────────────────
+  --inc-orange-1-raw: 93.83% 0.037 56.93;
+  --inc-orange-1: oklch(var(--inc-orange-1-raw));
+  --inc-orange-2-raw: 88.37% 0.07258208750520016 55.80328658240742;
+  --inc-orange-2: oklch(var(--inc-orange-2-raw));
+  --inc-orange-3-raw: 83.56% 0.10753627570574478 56.492594564236946;
+  --inc-orange-3: oklch(var(--inc-orange-3-raw));
+  --inc-orange-4-raw: 78.75% 0.14163582809066333 54.32911089172009;
+  --inc-orange-4: oklch(var(--inc-orange-4-raw));
+  --inc-orange-5-raw: 74.61% 0.171 51.56;
+  --inc-orange-5: oklch(var(--inc-orange-5-raw));
+  --inc-orange-6-raw: 69.33% 0.157 52.18;
+  --inc-orange-6: oklch(var(--inc-orange-6-raw));
+  --inc-orange-7-raw: 63.8% 0.142 52.1;
+  --inc-orange-7: oklch(var(--inc-orange-7-raw));
+  --inc-orange-8-raw: 58.28% 0.128 52.2;
+  --inc-orange-8: oklch(var(--inc-orange-8-raw));
+  --inc-orange-9-raw: 52.49% 0.113 51.98;
+  --inc-orange-9: oklch(var(--inc-orange-9-raw));
+
+  // General ──────────────────────────────
+  --inc-yin-1-raw: 91.87% 0.003 264.54;
+  --inc-yin-1: oklch(var(--inc-yin-1-raw));
+  --inc-yin-2-raw: 84.61% 0.004 286.31;
+  --inc-yin-2: oklch(var(--inc-yin-2-raw));
+  --inc-yin-3-raw: 76.89% 0.004 247.87;
+  --inc-yin-3: oklch(var(--inc-yin-3-raw));
+  --inc-yin-4-raw: 69.17% 0.004 247.88;
+  --inc-yin-4: oklch(var(--inc-yin-4-raw));
+  --inc-yin-5-raw: 61.01% 0.005 271.34;
+  --inc-yin-5: oklch(var(--inc-yin-5-raw));
+  --inc-yin-6-raw: 52.79% 0.005 271.32;
+  --inc-yin-6: oklch(var(--inc-yin-6-raw));
+  --inc-yin-7-raw: 43.87% 0.005 271.3;
+  --inc-yin-7: oklch(var(--inc-yin-7-raw));
+  --inc-yin-8-raw: 35.02% 0.005 236.66;
+  --inc-yin-8: oklch(var(--inc-yin-8-raw));
+  --inc-yin-9-raw: 25.11% 0.006 258.36;
+  --inc-yin-9: oklch(var(--inc-yin-9-raw));
+  --inc-yin-raw: 14.38% 0.007 256.88;  // B
+  --inc-yin: oklch(var(--inc-yin-raw));
+  --inc-yang-raw: 99.4% 0 0;           // W
+  --inc-yang: oklch(var(--inc-yang-raw));
+
+  --background-color: var(--inc-gray-1);
+  --base-grid-color1: oklch(var(--inc-blue-3-raw) / 30%);
+  --base-grid-color2: oklch(var(--inc-purple-3-raw) / 30%);
+  --baseline: calc(var(--line-height) / 2);
+  --block-spacing-bottom: var(--line-height);
+  --block-spacing-top: 0;
+  --column-gap: calc(var(--line-height) * 2);
+  --display-scale: 1;
+  --font-mono: null;
+  --font-sans: null;
+  --font-serif: null;
+  --font-size: 12px;
+  --foreground-color: oklch(var(--inc-yin-raw) / 80%);
+  --h1-size: 2.8rem;
+  --h2-size: 2.2rem;
+  --h3-size: 1.4rem;
+  --h4-size: 1.1rem;
+  --hr-thickness: 2px;
+  --line-height: calc(var(--font-size) * 1.5);
+  --pixel: 1px;
+  --row-gap: var(--line-height);
+
+  @media (prefers-color-scheme: dark) {
+    --background-color: var(--inc-yin-9);
+    --foreground-color: var(--inc-gray-1);
+  }
+
+  @media only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+    --display-scale: 2;
+    --pixel: 0.5px;
+  }
+
+  @media only screen and (min-device-pixel-ratio: 2.5), only screen and (min-resolution: 2.5dppx) {
+    --display-scale: 3;
+    --pixel: 0.34px;
+  }
+
+  @media only screen and (min-device-pixel-ratio: 3.5), only screen and (min-resolution: 3.5dppx) {
+    --display-scale: 4;
+    --pixel: 0.25px;
+  }
+}

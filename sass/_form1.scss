@@ -1,0 +1,114 @@
+fieldset {
+  position: relative;
+
+  button {
+    margin-top: 1rem; padding: 0.5rem calc(0.75rem + 2px);
+
+    border: none;
+    display: block;
+    text-transform: lowercase;
+
+    &:not(:disabled) {
+      cursor: pointer;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: var(--inc-blue-8);
+        color: var(--inc-gray-1);
+      }
+
+      @media (prefers-color-scheme: light) {
+        background-color: var(--inc-gray-9);
+        color: var(--inc-gray-1);
+      }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+
+      @media (prefers-color-scheme: dark) {
+        background-color: var(--inc-gray-8);
+        color: var(--inc-gray-5);
+      }
+
+      @media (prefers-color-scheme: light) {
+        background-color: var(--inc-gray-1);
+        color: var(--inc-gray-6);
+      }
+    }
+  }
+
+  label {
+    color: var(--inc-gray-5);
+    font-size: 80%;
+    position: absolute;
+    padding-top: 4px;
+    padding-left: calc(0.75rem + 2px);
+    text-transform: lowercase;
+
+    + input,
+    + select {
+      border: 2px solid;
+      transition: border-color 0.2s;
+      width: 400px;
+
+      @media (prefers-reduced-motion: reduce)  {
+        transition: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        background-color: oklch(var(--inc-yang-raw) / 10%);
+        color: var(--inc-gray-1);
+      }
+
+      @media (prefers-color-scheme: light) {
+        background-color: var(--inc-gray-1);
+      }
+
+      &::placeholder {
+        color: var(--inc-gray-5);
+        opacity: 1;
+      }
+
+      &:not(:focus) {
+        @media (prefers-color-scheme: dark) {
+          border-color: var(--inc-gray-8);
+        }
+
+        @media (prefers-color-scheme: light) {
+          border-color: var(--inc-gray-1);
+        }
+      }
+
+      &:focus {
+        box-shadow: none;
+        outline: none;
+
+        @media (prefers-color-scheme: dark) {
+          border-color: var(--inc-blue-5);
+        }
+
+        @media (prefers-color-scheme: light) {
+          border-color: var(--inc-gray-4);
+        }
+      }
+    }
+
+    + select {
+      background-image: url("/media/svg/caret-down.svg");
+      background-position: right 1rem bottom 0.7rem;
+      background-repeat: no-repeat;
+      background-size: 1rem;
+      padding: 1.5rem 0.75rem 0.5rem 0.5rem;
+    }
+
+    + input {
+      padding: 1.5rem 0.75rem 0.5rem 0.75rem;
+
+      &:invalid {
+        border-color: var(--inc-red-5);
+        box-shadow: none;
+        outline: none;
+      }
+    }
+  }
+}

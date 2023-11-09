@@ -1,0 +1,92 @@
+fieldset {
+  position: relative;
+
+  button {
+    margin-top: 1rem; padding: 0.5rem calc(0.75rem + 2px);
+
+    border: none;
+    display: block;
+    text-transform: lowercase;
+
+    &:not(:disabled) {
+      background-color: var(--inc-gray-9);
+      color: var(--inc-gray-1);
+      cursor: pointer;
+    }
+
+    &:disabled {
+      background-color: var(--inc-gray-1);
+      color: var(--inc-gray-6);
+      cursor: not-allowed;
+    }
+  }
+
+  label:not(.radio-label) {
+    color: var(--inc-gray-5);
+    font-size: 80%;
+    position: absolute;
+    padding-top: 4px;
+    padding-left: calc(0.75rem + 2px);
+    text-transform: lowercase;
+
+    + input,
+    + select {
+      background-color: var(--inc-gray-1);
+      border: 2px solid;
+      transition: border-color 0.2s;
+
+      @media (prefers-reduced-motion: reduce)  {
+        transition: none;
+      }
+
+      + label {
+        margin-left: calc(var(--padding) / 4);
+
+        + input {
+          margin-left: calc(var(--padding) / 4);
+        }
+      }
+
+      &:not(.long) {
+        width: calc(400px + calc(var(--padding) / 4));
+      }
+
+      &.long {
+        width: 800px;
+      }
+
+      &::placeholder {
+        color: var(--inc-gray-5);
+        opacity: 1;
+      }
+
+      &:not(:focus) {
+        border-color: var(--inc-gray-1);
+      }
+
+      &:focus {
+        border-color: var(--inc-gray-4);
+        box-shadow: none;
+        outline: none;
+      }
+    }
+
+    + select {
+      background-image: url("/media/svg/caret-down.svg");
+      background-position: right 1rem bottom 0.7rem;
+      background-repeat: no-repeat;
+      background-size: 1rem;
+      padding: 1.5rem 0.75rem 0.5rem 0.5rem;
+    }
+
+    + input {
+      padding: 1.5rem 0.75rem 0.5rem 0.75rem;
+
+      &:invalid {
+        border-color: var(--inc-red-5);
+        box-shadow: none;
+        outline: none;
+      }
+    }
+  }
+}

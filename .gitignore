@@ -1,0 +1,10 @@
+# OS artefacts
+.DS_Store
+Thumbs.db
+
+# Files
+*.log
+
+# Folders
+dist
+node_modules

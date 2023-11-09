@@ -1,0 +1,26 @@
+[package]
+authors = ["netop://ウエハ"]
+description = "Domain Ownership License Orchestrator"
+edition = "2021"
+homepage = "https://dolo.neuenet.com"
+license-file = "../LICENSE"
+name = "dolo"
+readme = "../README.md"
+repository = "https://github.com/neuenet/dolo-desktop"
+version = "2023.10.29"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [ "window-hide", "window-show", "window-close", "global-shortcut-all", "window-set-focus", "window-start-dragging", "clipboard-write-text", "fs-all", "path-all", "shell-open"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri-plugin-fs-extra = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

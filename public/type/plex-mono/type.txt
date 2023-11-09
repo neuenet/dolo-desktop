@@ -1,0 +1,10 @@
+IBM Plex Mono
+
+100 - Thin
+200 - ExtraLight
+300 - Light
+400 - Regular
+500 - Text
+600 - Medium
+700 - SemiBold
+800 - Bold

@@ -1,0 +1,202 @@
+// @use "sass:math";
+
+/// Helper function to replace characters in a string
+@function str-replace($string, $search, $replace: "") {
+  $index: str-index($string, $search);
+
+  @return if($index,
+    str-slice($string, 1, $index - 1) + $replace +
+    str-replace(str-slice($string, $index + str-length($search)), $search, $replace),
+    $string);
+}
+// quotes: "“" "”";
+/// Create an optimized svg url
+@function svg-url($svg) {
+  // Add missing namespace
+  @if not str-index($svg,xmlns) {
+    $svg: str-replace($svg, "<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"");
+  }
+
+  // Chunk up string in order to avoid "stack level too deep" error
+  $encoded: "";
+  $index: 0;
+  $slice: 2000;
+  $loops: ceil(calc(str-length($svg) / $slice));
+  // $loops: ceil(str-length($svg) / $slice);
+  // $loops: math.div(str-length($svg), $slice);
+  // $loops: calc(str-length($svg) / $slice);
+
+  @for $i from 1 through $loops {
+    $chunk: str-slice($svg, $index, $index + $slice - 1);
+    // Encode
+    $chunk: str-replace($chunk, "\"", "'");
+    $chunk: str-replace($chunk, "%", "%25");
+    $chunk: str-replace($chunk, "#", "%23");
+    $chunk: str-replace($chunk, "{", "%7B");
+    $chunk: str-replace($chunk, "}", "%7D");
+    $chunk: str-replace($chunk, "<", "%3C");
+    $chunk: str-replace($chunk, ">", "%3E");
+    // The maybe list
+    // Keep size and compile time down...only add on documented fail
+    //
+    // $chunk: str-replace($chunk, "&", "%26");
+    // $chunk: str-replace($chunk, "|", "%7C");
+    // $chunk: str-replace($chunk, "[", "%5B");
+    // $chunk: str-replace($chunk, "]", "%5D");
+    // $chunk: str-replace($chunk, "^", "%5E");
+    // $chunk: str-replace($chunk, "`", "%60");
+    // $chunk: str-replace($chunk, ";", "%3B");
+    // $chunk: str-replace($chunk, "?", "%3F");
+    // $chunk: str-replace($chunk, ":", "%3A");
+    // $chunk: str-replace($chunk, "@", "%40");
+    // $chunk: str-replace($chunk, "=", "%3D");
+    $encoded: #{$encoded}#{$chunk};
+    $index: $index + $slice;
+  }
+
+  @return url("data:image/svg+xml,#{$encoded}");
+}
+
+@mixin background-svg($svg) {
+  background-image: svg-url($svg);
+  /// via https://codepen.io/jakob-e/full/doMoML
+}
+
+@mixin center {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+@mixin clearfix {
+  clear: both;
+  content: "";
+  display: block;
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/// Smart font include
+/// Simply pass in the font-weight you want to use and the normal/italicized versions will be added
+/// No more weighing down the front-end with references to unused weights
+@mixin font($font-weight, $relative-font-path, $font-name) {
+  @font-face {
+    font-family: $font-name;
+    font-style: normal;
+    font-weight: $font-weight;
+    src: url("#{$relative-font-path}/#{$font-weight}.woff2") format("woff2");
+  }
+}
+
+@mixin font-plus-italics($font-weight, $relative-font-path, $font-name) {
+  @font-face {
+    font-family: $font-name;
+    font-style: normal;
+    font-weight: $font-weight;
+    src: url("#{$relative-font-path}/#{$font-weight}.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: $font-name;
+    font-style: italic;
+    font-weight: $font-weight;
+    src: url("#{$relative-font-path}/#{$font-weight}i.woff2") format("woff2");
+  }
+}
+
+@mixin mono-plus-italics($font-weight, $relative-font-path, $font-name) {
+  @font-face {
+    font-family: $font-name;
+    font-style: normal;
+    font-variant-numeric: slashed-zero;
+    font-weight: $font-weight;
+    src: url("#{$relative-font-path}/#{$font-weight}.woff2") format("woff2");
+    unicode-range: U+24, U+30-39, U+A2-A5; // $, 0-9, ¢£¤¥
+  }
+
+  @font-face {
+    font-family: $font-name;
+    font-style: italic;
+    font-variant-numeric: slashed-zero;
+    font-weight: $font-weight;
+    src: url("#{$relative-font-path}/#{$font-weight}i.woff2") format("woff2");
+    unicode-range: U+24, U+30-39, U+A2-A5; // $, 0-9, ¢£¤¥
+  }
+}
+
+@mixin hide-text {
+  border: none;
+  color: transparent;
+  font: 0 / 0 a;
+  text-shadow: none;
+}
+
+/// Cross-browser line-clamp support
+@mixin line-clamp(
+  $element-height: 2rem,
+  $row-count: 2,
+  $fade-color: var(--inc-white),
+  $computed-position: relative
+) {
+  height: $element-height;
+  overflow: hidden;
+  position: $computed-position;
+
+  &::after {
+    width: 50%; height: calc(#{$element-height} / #{$row-count});
+    right: 0; bottom: 0;
+
+    background-image: linear-gradient(to right, rgba(var(--inc-white-rgb), 0), #{$fade-color} 80%);
+    content: "";
+    position: absolute;
+  }
+}
+
+@mixin no-user-select {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+/// Use CSS variables without upsetting Sass-Lint
+/// https://github.com/sasstools/sass-lint/issues/1161#issuecomment-390537190
+@mixin root-prop($prop: null, $value: null) {
+  @if ($prop and $value) {
+    #{$prop}: $value;
+  }
+}
+
+@mixin selection($background-color: var(--inc-white), $text-color: var(--inc-gray-9)) {
+  &::selection {
+    background-color: $background-color;
+    color: $text-color;
+    text-shadow: none;
+  }
+
+  &::-moz-selection {
+    background-color: $background-color;
+    color: $text-color;
+    text-shadow: none;
+  }
+}
+
+@mixin underline($text-color: var(--inc-gray-9), $inc-whitespace-color: var(--inc-white)) {
+  @include selection($text-color, $inc-whitespace-color);
+
+  background-image: linear-gradient($inc-whitespace-color, $inc-whitespace-color), linear-gradient($inc-whitespace-color, $inc-whitespace-color), linear-gradient($text-color, $text-color);
+  background-position: 0 88%, 100% 88%, 0 88%;
+  background-repeat: no-repeat, no-repeat, repeat-x;
+  background-size: 0.05rem 1px, 0.05rem 1px, 1px 1px;
+  box-decoration-break: clone;
+  display: inline;
+  text-decoration: none;
+  text-shadow: 0.03rem 0 $inc-whitespace-color, -0.03rem 0 $inc-whitespace-color, 0 0.03rem $inc-whitespace-color, 0 -0.03rem $inc-whitespace-color, 0.06rem 0 $inc-whitespace-color, -0.06rem 0 $inc-whitespace-color, 0.09rem 0 $inc-whitespace-color, -0.09rem 0 $inc-whitespace-color, 0.12rem 0 $inc-whitespace-color, -0.12rem 0 $inc-whitespace-color, 0.15rem 0 $inc-whitespace-color, -0.15rem 0 $inc-whitespace-color;
+
+  @-moz-document url-prefix() { // sass-lint:disable-line empty-args
+    background-position: 0 90%, 100% 90%, 0 90%;
+  }
+}
