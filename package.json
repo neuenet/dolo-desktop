@@ -35,7 +35,7 @@
   "name": "dolo-desktop",
   "private": true,
   "scripts": {
-    "build": "npm i;npm run clean;npm run render;vite build",
+    "build": "npm i && npm run clean && npm run render && vite build",
     "clean": "del './dist' './public/style*'",
     "dev": "vite",
     "icon": "npm run tauri icon",
@@ -53,5 +53,5 @@
     "watch:sass": "sass --watch sass:public --style compressed"
   },
   "type": "module",
-  "version": "2023.11.08.2"
+  "version": "2023.11.08.3"
 }
