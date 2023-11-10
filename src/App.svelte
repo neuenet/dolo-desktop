@@ -28,7 +28,7 @@
   import { parse as toml } from "smol-toml";
 
   /// util
-  import { readyForStep2 } from "./utility/store";
+  import { readyForStep1, readyForStep2 } from "./utility/store";
 
   /// component
   import ExportInfo from "./component/ExportInfo.svelte";
@@ -106,6 +106,7 @@
       case "view": {
         exportInfoSelected = true;
         newExportSelected = false;
+        readyForStep1.set(false);
         break;
       }
 
@@ -120,6 +121,11 @@
   }
 
   /// reactive
+  readyForStep1.subscribe(value => {
+    if (value === true)
+      toggleNavSelection("new");
+  });
+
   readyForStep2.subscribe(value => {
     if (value === true)
       toggleNavSelection("view");

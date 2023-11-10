@@ -10,6 +10,7 @@
   import CopyButton from "./CopyButton.svelte";
 
   /// util
+  import { readyForStep1 } from "../utility/store";
   import type { LooseObject } from "../utility/interface";
 
   /// function
@@ -74,6 +75,10 @@
     const directoryList = await readDir("Dolo", { dir: BaseDirectory.Document, recursive: true });
     return await processTopLevelDirectories(directoryList);
   }
+
+  function toggleNew() {
+    readyForStep1.set(true);
+  }
 </script>
 
 <style lang="scss">
@@ -125,10 +130,33 @@
   hr {
     margin-top: var(--padding);
   }
+
+  aside {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    margin: 0 auto;
+    text-align: center;
+
+    button {
+      background-color: var(--dolo-palette-foreground);
+      color: var(--dolo-palette-background);
+      padding: 0.5rem calc(.75rem + 2px);
+      text-transform: lowercase;
+    }
+  }
 </style>
 
 <section>
   {#await renderFolders() then value}
+    {#if !value.length}
+      <aside>
+        <p>No exports created</p>
+        <button on:click={toggleNew}>Get started</button>
+      </aside>
+    {/if}
     <form on:submit|preventDefault>
       {#each value as v, domainIndex}
         <fieldset>
