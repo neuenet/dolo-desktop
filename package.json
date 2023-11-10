@@ -53,5 +53,5 @@
     "watch:sass": "sass --watch sass:public --style compressed"
   },
   "type": "module",
-  "version": "2023.11.09.1"
+  "version": "2023.11.09.2"
 }
