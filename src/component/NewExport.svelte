@@ -1,23 +1,27 @@
 <script lang="ts">
   /// import
   import { BaseDirectory, createDir, exists, readDir, readTextFile, removeFile, writeTextFile } from "@tauri-apps/api/fs";
-  import dedent from "dedent";
-  import { ed25519 } from "@noble/curves/ed25519";
   import { parse as toml } from "smol-toml";
   import { sep as separator } from "@tauri-apps/api/path";
   import * as x509 from "@peculiar/x509";
 
   /// util
+  import { AuthNS } from "../utility/authns";
   import { default as bns } from "../utility/bns";
   import { entry, readyForStep2 } from "../utility/store";
-  import type { LooseObject } from "../utility/interface";
+  import { formatTextToWidth } from "../utility/format-text-width";
+  import { generateSerial } from "../utility/generate-serial";
+  import { getNextYearDate } from "../utility/date-next-year";
+  import { getYesterdayDate } from "../utility/date-yesterday";
+  import { toZone } from "../utility/to-zone";
+  import type { ConfigFile, LooseObject } from "../utility/interface";
 
   /// component
   import ProgressBar from "./ProgressBar.svelte";
 
   /// variable
-  const { AuthServer, dnssec, constants } = bns;
-  const { types } = constants;
+  const { dnssec } = bns;
+  const { ED25519 } = dnssec.algs;
   const KSK = 1 << 0;
   const ZONE = 1 << 8;
   let domain = ($entry as LooseObject).domain || "";
@@ -48,8 +52,8 @@
     const { domain, nameserver1 } = $entry;
 
     const alg = {
-      hash: "SHA-512",
-      modulusLength: 4096,
+      hash: "SHA-256",
+      modulusLength: 2048,
       name: "RSASSA-PKCS1-v1_5",
       publicExponent: new Uint8Array([1, 0, 1])
     };
@@ -57,9 +61,7 @@
     const certFile = ["Dolo", domain, "tls", `${domain}.crt`].join(separator);
     const certFolder = ["Dolo", domain, "tls"].join(separator);
     const keyFile = ["Dolo", domain, "tls", `${domain}.key`].join(separator);
-
     const keys = await crypto.subtle.generateKey(alg, true, ["sign", "verify"]);
-    const serialNumber = getYesterdayDate().split("/").join("") + "00";
 
     const cert = await x509.X509CertificateGenerator.createSelfSigned({
       extensions: [
@@ -80,8 +82,8 @@
       keys,
       name: `CN=${domain}`,
       notBefore: new Date(getYesterdayDate()),
-      notAfter: new Date(getYesterdayDate()),
-      serialNumber,
+      notAfter: new Date(getNextYearDate()),
+      serialNumber: generateSerial(18),
       signingAlgorithm: alg
     });
 
@@ -113,21 +115,6 @@
   async function generateKSKKeys() {
     console.group("generateKSKKeys()");
     const { domain, nameserver1 } = $entry;
-    const privateKey = ed25519.utils.randomPrivateKey(); /// Uint8Array (Buffer)
-    const publicKey = ed25519.getPublicKey(privateKey);  /// Uint8Array (Buffer)
-
-    const kkey = {
-      class: "IN", // 1 | https://github.com/pinheadmz/bns/blob/master/lib/constants.js#L373 (classes.IN)
-      data: {
-        algorithm: 15, // ED25519
-        flags: ZONE | KSK,
-        protocol: 3,
-        publicKey
-      },
-      name: `${domain}.`,
-      ttl: 172800,
-      type: "DNSKEY" // 48 | https://github.com/pinheadmz/bns/blob/master/lib/constants.js#L209 (types.DNSKEY)
-    };
 
     const kskFolder = ["Dolo", domain, "ksk"].join(separator);
     const doesKSKDirectoryExist = await exists(kskFolder, { dir: BaseDirectory.Document });
@@ -135,7 +122,7 @@
     if (!doesKSKDirectoryExist) {
       await createDir(kskFolder, { dir: BaseDirectory.Document, recursive: true });
     } else {
-      /// clear out directory because filenames change on key generation...
+      /// clear out directory because filenames change on key generation…
       /// repeat regenerations make a bulky directory
       const directoryList = await readDir(kskFolder, { dir: BaseDirectory.Document, recursive: true });
 
@@ -148,40 +135,49 @@
       }
     }
 
-    const rd = kkey.data;
-
     /// writePrivate
 
-    const kskPrivateFilename = privFile(kkey.name, rd.protocol, calculateKeyTag(rd));
-    const kskPrivateContents = encodePrivate(privateKey, getCurrentDateTime());
-    const kskPrivateFile = [kskFolder, kskPrivateFilename].join(separator);
+    const _kpriv = dnssec.createPrivate(ED25519, 4096);
+    const _kkey = dnssec.makeKey(`${domain}.`, ED25519, _kpriv, ZONE | KSK);
 
-    await writeTextFile(kskPrivateFile, kskPrivateContents, { dir: BaseDirectory.Document });
-    console.info(`WRITE | ${kskPrivateFilename}`);
+    const _kskPrivateFilename = privFile(
+      _kkey.name,
+      _kkey.data.algorithm,
+      _kkey.data.keyTag()
+    );
+
+    await writeTextFile(
+      [kskFolder, _kskPrivateFilename].join(separator),
+      encodePrivate(_kpriv, getCurrentDateTime()), {
+        dir: BaseDirectory.Document
+      }
+    );
+
+    console.info(`WRITE | ${_kskPrivateFilename}`);
 
     /// writePublic
 
-    const kskPublicFilename = pubFile(kkey.name, rd.protocol, calculateKeyTag(rd));
-    const kskPublicContents = recordToString(kkey, "KSK");
-    const kskPublicFile = [kskFolder, kskPublicFilename].join(separator);
+    const _kskPublicFilename = pubFile(
+      _kkey.name,
+      _kkey.data.algorithm,
+      _kkey.data.keyTag()
+    );
 
-    await writeTextFile(kskPublicFile, kskPublicContents, { dir: BaseDirectory.Document });
-    console.info(`WRITE | ${kskPublicFilename}`);
+    await writeTextFile(
+      [kskFolder, _kskPublicFilename].join(separator),
+      _kkey.toString(), {
+        dir: BaseDirectory.Document
+      }
+    );
 
-    /// create DS record
+    console.info(`WRITE | ${_kskPublicFilename}`);
 
-    const dsRecord = {
-      algorithm: 15,
-      keyTag: calculateKeyTag(rd),
-      publicKey: uint8ArrayToHex(publicKey).toUpperCase(),
-      ttl: 172800
-    };
+    const _kds = dnssec.createDS(_kkey);
 
-    const recordRoot = `${domain}. ${dsRecord.ttl} IN DS ${dsRecord.keyTag} ${dsRecord.algorithm} ${dsRecord.publicKey}`;
+    const recordRoot = `${domain}. ${_kds.ttl} IN DS ${_kds.data.keyTag} ${_kds.data.algorithm} ${_kds.data.digestType} ${_kds.data.digest.toString("hex").toUpperCase()}`;
     const recordDS = recordRoot.split("DS")[1].trim();
     const recordGlue = `ns.${domain}. ${nameserver1}`;
     const recordNS = `ns.${domain}.`;
-    const recordsFile = ["Dolo", domain, "records.toml"].join(separator);
 
     const recordsFileContents = [
       "[root]",
@@ -192,7 +188,13 @@
       `ns     = "${recordNS}"`
     ].join("\n") + "\n";
 
-    await writeTextFile(recordsFile, recordsFileContents, { dir: BaseDirectory.Document });
+    await writeTextFile(
+      ["Dolo", domain, "records.toml"].join(separator),
+      recordsFileContents, {
+        dir: BaseDirectory.Document
+      }
+    );
+
     console.info("WRITE | records.toml");
     console.groupEnd();
     progress.setWidthRatio(0.4);
@@ -249,169 +251,44 @@
 
   async function generateZoneFile() {
     console.group("generateZoneFile()");
+    const { domain: name } = $entry;
+    let records = [];
 
-    interface ConfigFile {
-      ksk: {
-        private: string;
-        public: string;
-      },
-      main: {
-        domain: string;
-        host: string;
-      },
-      zsk: {
-        private: string;
-        public: string;
-      }
-    }
-
-    const { domain: configDomain } = $entry;
-    const certificateFile = ["Dolo", configDomain, "tls", `${configDomain}.crt`].join(separator);
-    const outputFile = ["Dolo", configDomain, "output.toml"].join(separator);
-    const originalFileContent = await readTextFile(outputFile, { dir: BaseDirectory.Document });
-    const certificateFileContent = await readTextFile(certificateFile, { dir: BaseDirectory.Document });
-
+    const originalFileContent = await readTextFile(["Dolo", name, "output.toml"].join(separator), { dir: BaseDirectory.Document });
     const { ksk, main, zsk } = toml(originalFileContent) as unknown as ConfigFile;
-    const { domain: domainPlusDot, host } = main;
+    const { host } = main; /// domain: domainPlusDot
     const { private: privateKSK, public: publicKSK } = ksk;
     const { private: privateZSK, public: publicZSK } = zsk;
-    const domainMinusDot = domainPlusDot.slice(0, -1);
-    let records: any[] = [];
 
-    /// Create TLSA from certificate
-    const normalizedPem = certificateFileContent.replace(/-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\n/g, "");
-    const { publicKey: publicKeyObject } = new x509.X509Certificate(normalizedPem);
-
-    // Import the PEM data as a CryptoKey
-    const publicKey = await crypto.subtle.importKey(
-      "spki",
-      publicKeyObject.rawData, {
-        hash: "SHA-512",
-        name: "RSASSA-PKCS1-v1_5"
-      },
-      true,
-      ["verify"]
-    );
-
-    // Export the CryptoKey as a DER-encoded ArrayBuffer
-    const publicKeyBuffer = await crypto.subtle.exportKey("spki", publicKey);
-
-    // Generate the TLSA record
-    const sha512Hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-512", publicKeyBuffer)))
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("");
-
-    /// Create DNSKEY for ZSK/KSK
-    const kskFile = ["Dolo", domainMinusDot, "ksk", publicKSK].join(separator); //
-    const kskDNSRecord = await readTextFile(kskFile, { dir: BaseDirectory.Document });
-
-    const zskFile = ["Dolo", domainMinusDot, "zsk", publicZSK].join(separator); //
-    const zskDNSRecord = await readTextFile(zskFile, { dir: BaseDirectory.Document });
-
-    const kskFilePrivate = ["Dolo", domainMinusDot, "ksk", privateKSK].join(separator); //
-    const kskFilePrivateContent = await readTextFile(kskFilePrivate, { dir: BaseDirectory.Document });
-
-    const zskFilePrivate = ["Dolo", domainMinusDot, "zsk", privateZSK].join(separator); //
-    const zskFilePrivateContent = await readTextFile(zskFilePrivate, { dir: BaseDirectory.Document });
-
-    const server = new AuthServer({
-      dnssec: true,   /// add EDNS0 DO bit in responses
-      edns: true,     /// add EDNS0 OPT record in responses
-      ednsSize: 4096, /// set the UDP buffer size to 4096
-      tcp: true       /// allow queries over TCP
+    const authns = new AuthNS({
+      domain: name,
+      host,
+      kskkey: publicKSK,
+      kskpriv: privateKSK,
+      test: false,
+      zskkey: publicZSK,
+      zskpriv: privateZSK
     });
 
-    server.setOrigin(domainPlusDot);
-    const { zone } = server;
+    await authns.init();
 
-    const intro = dedent`
-      ;
-      ; ZONE data file for ${domainMinusDot.toUpperCase()}
-      ;
-
-      $TTL 604800
-      $ORIGIN ${domainPlusDot}
-
-      ; SERIAL - current date (ChronVer) + increment ; REFRESH ; RETRY ; EXPIRE ; MINIMUM
-      @ IN SOA ns.${domainPlusDot} admin.nic.${domainPlusDot} ${chronver().replace(/\./g, "")} 604800 86400 2419200 604800
-
-      ;
-      ; Nameserver Info
-      ;
-
-      @ IN NS ns.${domainPlusDot}
-      @ IN A ${host}
-      ; @ IN AAAA <your nameserver IPV6 address>
-      ns.${domainPlusDot} IN A ${host}
-
-      ;
-      ; Domain/Website Info
-      ;
-
-      ${domainPlusDot} IN NS ns.${domainPlusDot}\n
-    `;
-
-    zone.fromString(`${domainPlusDot} 21600 IN A ${host}`);
-    zone.fromString(`*.${domainPlusDot} 21600 IN A ${host}`);
-    zone.fromString(`_443._tcp 3600 IN TLSA 3 1 2 ${sha512Hash}; usage = Domain Issued Certificate ; selector = SPKI ; matching type = SHA512`);
-
-    // Create DNSKEY for KSK
-    zone.fromString(kskDNSRecord);
-    // Create DNSKEY for ZSK
-    zone.fromString(zskDNSRecord);
-
-    // Sign DNSKEY RRset with KSK
-    const [kalg, KSKpriv] = dnssec.decodePrivate(kskFilePrivateContent);
-    const KSKkey = dnssec.makeKey(domainPlusDot, kalg, KSKpriv, ZONE | KSK);
-    const DNSKEYrrset = zone.get(domainPlusDot, types.DNSKEY);
-    const RRSIGdnskey = dnssec.sign(KSKkey, KSKpriv, DNSKEYrrset);
-    zone.insert(RRSIGdnskey);
-
-    // Sign all other RRsets with ZSK
-    const [zalg, ZSKpriv] = dnssec.decodePrivate(zskFilePrivateContent);
-    const ZSKkey = dnssec.makeKey(domainPlusDot, zalg, ZSKpriv, ZONE);
-
-    for (const [, map] of zone.names) {
-      for (const [, rrs] of map.rrs)
-        zone.insert(dnssec.sign(ZSKkey, ZSKpriv, rrs));
-    }
-
-    // Add ZSK directly to zone to sign wildcards ad-hoc
-    server.setZSKFromString(zskFilePrivateContent);
-
-    zone.names.forEach((recordMap: { rrs: LooseObject, sigs: LooseObject, zone: LooseObject }) => {
-      recordMap.rrs.forEach((rr: any) => records = records.concat(rr));
-      recordMap.sigs.forEach((rr: any) => records = records.concat(rr));
+    authns.server.zone.names.forEach(recordMap => {
+      recordMap.rrs.forEach(rr => records = records.concat(rr));
+      recordMap.sigs.forEach(rr => records = records.concat(rr));
     });
 
-    const zonefileContent = toZone(records).replace(/  +/g, " ").trim();
+    const zone = toZone(records);
 
     /// write zonefile
-    const zoneFile = ["Dolo", domain, `db.${domainMinusDot}`].join(separator);
-    await writeTextFile(zoneFile, intro + zonefileContent, { dir: BaseDirectory.Document });
+    await writeTextFile(["Dolo", name, `${name}.zone`].join(separator), zone, { dir: BaseDirectory.Document });
 
-    console.info(`WRITE | db.${domainMinusDot}`);
+    console.info(`WRITE | ${name}.zone`);
     console.groupEnd();
   }
 
   async function generateZSKKeys() {
     console.group("generateZSKKeys()");
     const { domain } = $entry;
-    const privateKey = ed25519.utils.randomPrivateKey(); /// Uint8Array (Buffer)
-    const publicKey = ed25519.getPublicKey(privateKey);  /// Uint8Array (Buffer)
-
-    const kkey = {
-      class: "IN",     // 1 | https://github.com/pinheadmz/bns/blob/master/lib/constants.js#L373 (classes.IN)
-      data: {
-        algorithm: 15, // ED25519
-        flags: ZONE,
-        protocol: 3,
-        publicKey
-      },
-      name: `${domain}.`,
-      ttl: 172800,
-      type: "DNSKEY"   // 48 | https://github.com/pinheadmz/bns/blob/master/lib/constants.js#L209 (types.DNSKEY)
-    };
 
     const zskFolder = ["Dolo", domain, "zsk"].join(separator);
     const doesZSKDirectoryExist = await exists(zskFolder, { dir: BaseDirectory.Document });
@@ -419,7 +296,7 @@
     if (!doesZSKDirectoryExist) {
       await createDir(zskFolder, { dir: BaseDirectory.Document, recursive: true });
     } else {
-      /// clear out directory because filenames change on key generation...
+      /// clear out directory because filenames change on key generation…
       /// repeat regenerations make a bulky directory
       const directoryList = await readDir(zskFolder, { dir: BaseDirectory.Document, recursive: true });
 
@@ -432,25 +309,33 @@
       }
     }
 
-    const rd = kkey.data;
-
     /// writePrivate
 
-    const zskPrivateFilename = privFile(kkey.name, rd.protocol, calculateKeyTag(rd));
-    const zskPrivateContents = encodePrivate(privateKey, getCurrentDateTime());
-    const zskPrivateFile = [zskFolder, zskPrivateFilename].join(separator);
+    const _zpriv = dnssec.createPrivate(ED25519, 4096);
+    const _zkey = dnssec.makeKey(`${domain}.`, ED25519, _zpriv, ZONE);
+    const _zskPrivateFilename = privFile(_zkey.name, _zkey.data.algorithm, _zkey.data.keyTag());
 
-    await writeTextFile(zskPrivateFile, zskPrivateContents, { dir: BaseDirectory.Document });
-    console.info(`WRITE | ${zskPrivateFilename}`);
+    await writeTextFile(
+      [zskFolder, _zskPrivateFilename].join(separator),
+      encodePrivate(_zpriv, getCurrentDateTime()), {
+        dir: BaseDirectory.Document
+      }
+    );
+
+    console.info(`WRITE | ${_zskPrivateFilename}`);
 
     /// writePublic
 
-    const zskPublicFilename = pubFile(kkey.name, rd.protocol, calculateKeyTag(rd));
-    const zskPublicContents = recordToString(kkey, "ZSK");
-    const zskPublicFile = [zskFolder, zskPublicFilename].join(separator);
+    const _zskPublicFilename = pubFile(_zkey.name, _zkey.data.algorithm, _zkey.data.keyTag());
 
-    await writeTextFile(zskPublicFile, zskPublicContents, { dir: BaseDirectory.Document });
-    console.info(`WRITE | ${zskPublicFilename}`);
+    await writeTextFile(
+      [zskFolder, _zskPublicFilename].join(separator),
+      _zkey.toString(), {
+        dir: BaseDirectory.Document
+      }
+    );
+
+    console.info(`WRITE | ${_zskPublicFilename}`);
     console.groupEnd();
     progress.setWidthRatio(0.6);
   }
@@ -470,42 +355,8 @@
   }
 
   /// helper
-  function chronver(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    let increment = 0;
 
-    return `${year}.${month}.${day}.${increment}`;
-  }
-
-  function calculateKeyTag(dnskeyRecord: any): number {
-    const { algorithm, flags, protocol, publicKey } = dnskeyRecord;
-
-    // Concatenate the fields into a binary string
-    const keyDataArray = new Uint8Array([
-      (flags >> 8) & 0xff,
-      flags & 0xff,
-      protocol,
-      algorithm,
-      ...publicKey
-    ]);
-
-    // Perform 16-bit checksum
-    let keyTag = 0;
-
-    for (let i = 0; i < keyDataArray.length; i += 2) {
-      keyTag += (keyDataArray[i] << 8) | keyDataArray[i + 1];
-    }
-
-    keyTag = (keyTag & 0xffff) + ((keyTag >> 16) & 0xffff);
-    return keyTag & 0xffff;
-
-    /// ^ ChatGPT 3.5
-  }
-
-  function encodePrivate(raw: Uint8Array, time: string) {
+  function encodePrivate(raw: Uint8Array, time: number) {
     return [
       "Private-key-format: v1.3",
       "Algorithm: 15 (ED25519)",
@@ -516,25 +367,7 @@
     ].join("\n") + "\n";
   }
 
-  function formatTextToWidth(text: string, width: number): string {
-    let currentLine = "";
-    let formattedText = "";
-
-    for (let i = 0; i < text.length; i++) {
-      currentLine += text[i];
-
-      if (currentLine.length === width) {
-        formattedText += currentLine + "\n";
-        currentLine = "";
-      } else if (i === text.length - 1) {
-        formattedText += currentLine;
-      }
-    }
-
-    return formattedText;
-  }
-
-  function getCurrentDateTime(): string {
+  function getCurrentDateTime(): number {
     const now = new Date();
 
     const year = now.getFullYear();
@@ -544,19 +377,7 @@
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
 
-    return `${year}${month}${day}${hours}${minutes}${seconds}`;
-  }
-
-  function getYesterdayDate(): string {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const year = yesterday.getFullYear();
-    const month = String(yesterday.getMonth() + 1).padStart(2, "0");
-    const day = String(yesterday.getDate()).padStart(2, "0");
-
-    return `${year}/${month}/${day}`;
+    return Number(`${year}${month}${day}${hours}${minutes}${seconds}`);
   }
 
   function pad(num: number, len: number) {
@@ -569,57 +390,11 @@
   }
 
   function privFile(name: string, alg: number, tag: number) {
-    const fqdn = name.toLowerCase(); // + ".";
-    const file = `K${fqdn}+${pad(alg, 3)}+${pad(tag, 5)}`;
-
-    return `${file}.private`;
+    return `K${name.toLowerCase()}+${pad(alg, 3)}+${pad(tag, 5)}.private`;
   }
 
   function pubFile(name: string, alg: number, tag: number) {
-    const fqdn = name.toLowerCase(); // + ".";
-    const file = `K${fqdn}+${pad(alg, 3)}+${pad(tag, 5)}`;
-
-    return `${file}.key`;
-  }
-
-  function recordToString(rr: any, commentType: string): string {
-    const {
-      class: klass,
-      data: {
-        algorithm,
-        flags,
-        protocol,
-        publicKey
-      },
-      name,
-      ttl,
-      type
-    } = rr;
-
-    const keyId = calculateKeyTag(rr.data);
-
-    return [
-      name,
-      ttl,
-      klass,
-      type,
-      flags,
-      protocol,
-      algorithm,
-      uint8ArrayToBase64(publicKey),
-      `; ${commentType} ; alg = ED25519 ; key id = ${keyId}`
-    ].join(" ") + "\n";
-  }
-
-  function toZone(records: Array<LooseObject>) {
-    let text = "";
-
-    for (const record of records) {
-      text += record.toString() + "\n";
-    }
-
-    return text;
-    /// via https://github.com/pinheadmz/bns/blob/cname1/lib/wire.js
+    return `K${name.toLowerCase()}+${pad(alg, 3)}+${pad(tag, 5)}.key`;
   }
 
   function uint8ArrayToBase64(uint8Array: Uint8Array): string {
@@ -632,12 +407,6 @@
 
     // Use btoa to convert the binary string to base64
     return btoa(binaryString);
-  }
-
-  function uint8ArrayToHex(uint8Array: Uint8Array): string {
-    return Array.from(uint8Array)
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("");
   }
 
   function validateIPAddress(ip: string) {

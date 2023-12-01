@@ -28,7 +28,7 @@
   import { parse as toml } from "smol-toml";
 
   /// util
-  import { readyForStep1, readyForStep2 } from "./utility/store";
+  import { entry, readyForStep1, readyForStep2 } from "./utility/store";
 
   /// component
   import ExportInfo from "./component/ExportInfo.svelte";
@@ -115,6 +115,8 @@
         exportInfoSelected = false;
         newExportSelected = true;
         readyForStep2.set(false);
+        /// reset input fields
+        entry.set({ domain: "", nameserver1: "" });
         break;
       }
     }
