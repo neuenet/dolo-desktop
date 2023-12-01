@@ -4,10 +4,10 @@
     "url": "https://webb.page"
   },
   "dependencies": {
-    "@noble/curves": "^1.2.0",
     "@peculiar/x509": "^1.9.5",
     "@tauri-apps/api": "^1.5.1",
     "@toml-tools/parser": "^1.0.0",
+    "buffer": "^6.0.3",
     "copy-text-to-clipboard": "^3.2.0",
     "dedent": "^1.5.1",
     "dnsz": "^4.0.0",
@@ -53,5 +53,5 @@
     "watch:sass": "sass --watch sass:public --style compressed"
   },
   "type": "module",
-  "version": "2023.11.09"
+  "version": "2023.12.01.1"
 }

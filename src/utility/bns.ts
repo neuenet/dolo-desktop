@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /*!
  * bns@0.15.0 - DNS bike-shed
  * Copyright(c) 2023, Christopher Jeffrey(MIT)
@@ -1038,10 +1040,10 @@ const __browser_require__ = (function(global) {
         if (!value) {
           let generatedMessage = false;
 
-          if (arguments.length === 0) {
+          if (arguments.length == 0) {
             message = "No value argument passed to `assert()`.";
             generatedMessage = true;
-          } else if (message === null) {
+          } else if (message == null) {
             message = "Assertion failed.";
             generatedMessage = true;
           } else if (isError(message)) {
@@ -6906,11 +6908,13 @@ const __browser_require__ = (function(global) {
 
     dane.select = function select(cert, selector) {
       assert((cert != null && cert._isBuffer === true));
+      assert(cert != null);
       assert((selector & 0xff) === selector);
 
       switch(selector) {
         case selectors.FULL:
           return getCert(cert);
+
         case selectors.SPKI:
           return getPubkeyInfo(cert);
       }
@@ -6920,6 +6924,7 @@ const __browser_require__ = (function(global) {
 
     dane.hash = function hash(data, matchingType) {
       assert((data != null && data._isBuffer === true));
+      assert(data != null);
       assert((matchingType & 0xff) === matchingType);
 
       switch(matchingType) {
@@ -7103,7 +7108,6 @@ const __browser_require__ = (function(global) {
 
       // pubkeyinfo
       const size = gauge(data, off);
-
       assert(off + size <= data.length);
 
       return data.slice(off, off + size);
@@ -7113,7 +7117,6 @@ const __browser_require__ = (function(global) {
       assert(off < data.length);
 
       const start = off;
-
       let type = data[off++];
 
       const primitive = (type & 0x20) === 0;
@@ -7134,11 +7137,11 @@ const __browser_require__ = (function(global) {
       if (type != expect) {
         if (explicit)
           return [start, 0];
+
         throw new Error(`Expected type: ${expect}. Got: ${type}.`);
       }
 
       assert(off < data.length);
-
       let size = data[off++];
 
       if (!primitive && size === 0x80)
@@ -7394,7 +7397,7 @@ const __browser_require__ = (function(global) {
       // from BIND which limits it at 35. 33 was
       // chosen because a lot of people use
       // `0x01000001` as an exponent for DNSSEC
-      //(due BIND"s dnssec-keygen using a stupid
+      //(due BINDs dnssec-keygen using a stupid
       // exponent for no reason).
       //
       // See:
@@ -57600,9 +57603,10 @@ const __browser_require__ = (function(global) {
 
     tlsa.create = function create(cert, name, protocol, port, options = {}) {
       assert((cert != null && cert._isBuffer === true));
+      assert(cert != null);
       assert(options && typeof options === "object");
 
-      let {ttl, usage, selector, matchingType} = options;
+      let { matchingType, selector, ttl, usage } = options;
 
       if (ttl == null)
         ttl = 3600;
@@ -57614,7 +57618,7 @@ const __browser_require__ = (function(global) {
         selector = selectors.SPKI;
 
       if (matchingType == null)
-        matchingType = matchingTypes.SHA256;
+        matchingType = matchingTypes.SHA512;
 
       assert((ttl >>> 0) === ttl);
       assert((usage & 0xff) === usage);
@@ -57625,6 +57629,7 @@ const __browser_require__ = (function(global) {
       const rd = new TLSARecord();
 
       rr.name = tlsa.encodeName(name, protocol, port);
+
       rr.type = types.TLSA;
       rr.class = classes.IN;
       rr.ttl = ttl;
@@ -57639,7 +57644,6 @@ const __browser_require__ = (function(global) {
         throw new Error("Unknown selector or matching type.");
 
       rd.certificate = hash;
-
       return rr;
     };
 
@@ -57648,7 +57652,6 @@ const __browser_require__ = (function(global) {
       assert(rr.type === types.TLSA);
 
       const rd = rr.data;
-
       return dane.verify(cert, rd.selector, rd.matchingType, rd.certificate);
     };
 
@@ -57665,7 +57668,6 @@ const __browser_require__ = (function(global) {
         name = "";
 
       const encoded = util.fqdn(`_${port.toString(10)}._${protocol}.${name}`);
-
       assert(util.isName(encoded));
 
       return encoded;
@@ -58337,7 +58339,7 @@ const __browser_require__ = (function(global) {
     };
 
     dnssec.createDS = function createDS(key, digestType) {
-      if (digestType == null)
+      if (!digestType) // === null
         digestType = hashes.SHA256;
 
       assert(key instanceof Record);
@@ -58388,7 +58390,7 @@ const __browser_require__ = (function(global) {
     };
 
     dnssec.sign = function sign(key, priv, rrset, lifespan) {
-      if (lifespan == null)
+      if (!lifespan) /// lifespan === null
         lifespan = 365 * 24 * 60 * 60;
 
       assert(key instanceof Record);
@@ -58408,7 +58410,7 @@ const __browser_require__ = (function(global) {
       rd.keyTag = key.data.keyTag();
       rd.signerName = key.name;
       rd.algorithm = key.data.algorithm;
-      rd.inception = util.now() -(24 * 60 * 60);
+      rd.inception = util.now() - (24 * 60 * 60);
       rd.expiration = util.now() + lifespan;
 
       return dnssec.signRRSIG(rr, priv, rrset);

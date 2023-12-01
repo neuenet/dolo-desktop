@@ -28,7 +28,7 @@
   import { parse as toml } from "smol-toml";
 
   /// util
-  import { readyForStep2 } from "./utility/store";
+  import { entry, readyForStep1, readyForStep2 } from "./utility/store";
 
   /// component
   import ExportInfo from "./component/ExportInfo.svelte";
@@ -106,6 +106,7 @@
       case "view": {
         exportInfoSelected = true;
         newExportSelected = false;
+        readyForStep1.set(false);
         break;
       }
 
@@ -114,12 +115,19 @@
         exportInfoSelected = false;
         newExportSelected = true;
         readyForStep2.set(false);
+        /// reset input fields
+        entry.set({ domain: "", nameserver1: "" });
         break;
       }
     }
   }
 
   /// reactive
+  readyForStep1.subscribe(value => {
+    if (value === true)
+      toggleNavSelection("new");
+  });
+
   readyForStep2.subscribe(value => {
     if (value === true)
       toggleNavSelection("view");
