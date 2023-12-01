@@ -3,7 +3,7 @@
 
 /// import
 
-import { Buffer } from "Buffer";
+import { Buffer } from "buffer";
 import { BaseDirectory, readTextFile } from "@tauri-apps/api/fs";
 import { parse as toml } from "smol-toml";
 import { sep as separator } from "@tauri-apps/api/path";
